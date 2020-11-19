@@ -14,9 +14,9 @@ const employees = [];
 let nextEmployee = "manager";
 
 // This function manages the flow of the application
-function init() {
+async function init() {
     while(nextEmployee.toLowerCase() !== "done"){
-        gatherInformation();
+        await gatherInformation();
     }
     console.log(`Added ${employees.length}`);
     console.log(employees);
@@ -25,23 +25,23 @@ function init() {
 }
 
 // This function retrieves the employee data
-function gatherInformation() {
+async function gatherInformation() {
     let prompts = preparePrompts(nextEmployee);
 
-    inquirer.prompt(prompts).then((data) => {
-        // Store results in employee object
-        let lastEmployee = employees[employees.length - 1];
-        lastEmployee.setProperties(data);
-        console.log(`Added Employee ${employees.length}:${JSON.stringify(lastEmployee)}`);
-        // prepare for next round
-        nextEmployee = data.nextRole.toLowerCase();
-        if(nextEmployee !== "done"){
-            prompts = preparePrompts(data.nextRole);
-            console.log(`Getting Data for ${data.nextRole}`);
-        }
-    }).catch((error) => {
+    let data = await inquirer.prompt(prompts)
+    .catch((error) => {
         console.log(`Error:${error}`)
     });
+
+    let lastEmployee = employees[employees.length - 1];
+    lastEmployee.setProperties(data);
+    console.log(`Added Employee ${employees.length}:${JSON.stringify(lastEmployee)}`);
+    // prepare for next round
+    nextEmployee = data.nextRole.toLowerCase();
+    if(nextEmployee !== "done"){
+        prompts = preparePrompts(data.nextRole);
+        console.log(`Getting Data for ${data.nextRole}`);
+    }
 }
 
 // This function will prepare the array of prompt objects
@@ -83,7 +83,7 @@ function preparePrompts(role) {
         name: "nextRole",
         type: "list",
         message: "Which type of team member would you like to add:",
-        choices: ["Manager", "Engineer", "Intern", "Employee", "Done"]
+        choices: ["Done", "Manager", "Engineer", "Intern", "Employee"]
     });
 
     return prompts;
